@@ -1,27 +1,55 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import Home from '../views/Home.vue'
+var firebase = require("firebase/app");
 
 Vue.use(VueRouter)
-
-const routes = [
-  {
-    path: '/',
-    name: 'home',
-    component: Home
-  },
-  {
-    path: '/about',
-    name: 'about',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/About.vue')
-  }
-]
-
 const router = new VueRouter({
-  routes
+  mode: 'history',
+  base: process.env.BASE_URL,
+  routes: [
+    {
+      path: '/registro',
+      name: 'registro',
+      component: () => import(/* webpackChunkName: "about" */ '../views/Registro.vue')
+    },
+    {
+      path: '/inicio',
+      name: 'inicio',
+      component: () => import(/* webpackChunkName: "about" */ '../views/Inicio.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '',
+      name: 'login',
+      component: () => import(/* webpackChunkName: "about" */ '../views/Login.vue')
+    },
+    {
+      path: '/login',
+      name: 'login',
+      component: () => import(/* webpackChunkName: "about" */ '../views/Login.vue')
+    },
+    {
+      path: '/agregar',
+      name: 'agregar',
+      component: () => import(/* webpackChunkName: "about" */ '../views/Agregar.vue')
+    },
+    {
+      path: '/editar/:id',
+      name: 'editar',
+      component: () => import(/* webpackChunkName: "about" */ '../views/Editar.vue')
+    }
+  ]
 })
+
+router.beforeEach((to, from, next) => {
+  const rutaProtegida = to.matched.some(record => record.meta.requiresAuth);
+  const usuario = firebase.auth().currentUser;
+  if (rutaProtegida === true && usuario === null) {
+    next({ name: 'login' })
+  } else {
+    next()
+  }
+})
+
 
 export default router
